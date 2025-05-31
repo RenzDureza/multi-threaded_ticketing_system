@@ -1,15 +1,17 @@
-// DUREZA 2025-05-30 19:37
+// DUREZA 2025-05-31 07:25
 // TODO:
-// - register_user()
-// - log_in()
-// - log_out()
+// - register_user() DONE
+// - log_in() DONE
+// - log_out() DONE
 // - log_in menu
 
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <mutex>
 #include <ostream>
+#include <pthread.h>
 #include <thread>
 #include <string>
 #include <random>
@@ -78,18 +80,21 @@ class User{
   private:
   string fullname;
   string username;
-  string passw;
+  string password;
 
   public:
-  User(string fullname, string username, string passw) {
+  User(string fullname, string username, string password) {
     this->fullname = fullname;
     this->username = username;
-    this->passw = passw;
+    this->password = password;
   }
 
   string get_user_name() {
-    lock_guard<mutex> lock(user_mtx);
-    return fullname;
+    return username;
+  }
+
+  string get_password() {
+    return password;
   }
 };
 
@@ -123,9 +128,10 @@ class User{
 
 vector<Ticket> ticket_list; */
 
-// not sure pa kung need
-// vector<User> user_list;
+User* current_user = nullptr;
 
+// not sure pa kung need
+vector<User> user_list;
 vector<Event> event_list;
 
 void purchase_ticket(User* usr, Event* evt);
@@ -134,15 +140,11 @@ void update_event(int event_id);
 bool event_exists(string event_date);
 bool event_id_exists(int event_id);
 void remove_event(int event_id);
+void register_user();
+bool log_in();
+void log_out();
 
 int main() {
-  string name, date;
-  int event_id, available_tickets;
-  Event evt1("bday", "12-02-2025", 1, 10);
-  User usr1("Aldrin Renz Dureza", "str4t_", "secret");
-  purchase_ticket(&usr1, &evt1);
-
-  cout << "done\n";
   return 0;
 }
 
@@ -239,3 +241,47 @@ void update_event(int event_id) {
     }
   }
 }
+
+void register_user() {
+  string fullname, user_name, password;
+
+  cout << "Register" << endl;
+  cout << "Full Name: ";
+  getline(cin, fullname);
+  cout << "Username: ";
+  getline(cin, user_name);
+  cout << "Password: ";
+  getline(cin, password);
+
+  lock_guard<mutex> lock(user_mtx);
+  User newUser(fullname, user_name, password);
+
+  cout << newUser.get_user_name() << " have joined the system" << endl;
+}
+
+bool log_in() {
+  string user_name, password;
+  cout << "Login" << endl;
+  cout << "Username: ";
+  getline(cin, user_name);
+  cout << "Password: ";
+  getline(cin, password);
+
+  for (User& i : user_list) {
+    if ((i.get_user_name() == user_name) && (i.get_password() == password)) {
+      current_user = &i;
+      return true;
+    }
+  }
+  return false;
+}
+
+void log_out() {
+  if (current_user != nullptr) {
+    cout << current_user->get_user_name() << " has been logged out." << endl;
+    current_user = nullptr;
+  } else {
+    cout << "No user is currently logged in." << endl;
+  }
+}
+
