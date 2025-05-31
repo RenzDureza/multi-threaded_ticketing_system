@@ -12,7 +12,6 @@
 #include <mutex>
 #include <ostream>
 #include <pthread.h>
-#include <thread>
 #include <string>
 #include <random>
 #include <vector>
@@ -255,6 +254,7 @@ void register_user() {
 
   lock_guard<mutex> lock(user_mtx);
   User newUser(fullname, user_name, password);
+  user_list.push_back(newUser);
 
   cout << newUser.get_user_name() << " have joined the system" << endl;
 }
